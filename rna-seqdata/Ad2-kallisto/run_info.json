@@ -1,0 +1,13 @@
+{
+	"n_targets": 197044,
+	"n_bootstraps": 0,
+	"n_processed": 39414061,
+	"n_pseudoaligned": 37250854,
+	"n_unique": 8356441,
+	"p_pseudoaligned": 94.5,
+	"p_unique": 21.2,
+	"kallisto_version": "0.44.0",
+	"index_version": 10,
+	"start_time": "Fri Aug  3 23:35:54 2018",
+	"call": "kallisto quant -i /data/molpath/genomes/hg38/kallisto_hg38_toil_recompute.idx -t 4 -o out/Ad2-kallisto raw/Ad2-S1_1.fastq.gz raw/Ad2-S1_2.fastq.gz"
+}
