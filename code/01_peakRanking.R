@@ -2,6 +2,10 @@ library(data.table)
 library(dplyr)
 library(GenomicRanges)
 library(BuenColors)
+library(Biostrings)
+library(diffloop)
+library(BSgenome.Hsapiens.UCSC.hg19)
+
 "%ni%" <- Negate("%in%")
 
 LIN28B_binding <- makeGRangesFromDataFrame(data.frame(
@@ -21,17 +25,28 @@ p1 <- importPeaks("../peaks/PURA-Abcam_noDup_noLambda_peaks.narrowPeak")
 p2 <- importPeaks("../peaks/PURA-Bethyl_noDup_noLambda_peaks.narrowPeak")
 
 lin28b_RNA_NoDupNoLambda_go <- lin_rna[1:length(lin_rna) %ni%  queryHits(findOverlaps(lin_rna, c(p1, p2)))]
-sumdf_RNA <- data.frame(lin28b_RNA_NoDupNoLambda_go, BCL11A = 1:length(lin28b_RNA_NoDupNoLambda_go) %in%
+seq_lin28b_RNA_NoDupNoLambda_go <- getSeq(BSgenome.Hsapiens.UCSC.hg19, addchr(lin28b_RNA_NoDupNoLambda_go))
+
+motif_RNA <- as.numeric((vcountPattern("GGAGA", seq_lin28b_RNA_NoDupNoLambda_go) + vcountPattern("TCTCC", seq_lin28b_RNA_NoDupNoLambda_go)) > 0)
+sumdf_RNA <- data.frame(lin28b_RNA_NoDupNoLambda_go, motif = motif_RNA, BCL11A = 1:length(lin28b_RNA_NoDupNoLambda_go) %in%
                       queryHits(findOverlaps(lin28b_RNA_NoDupNoLambda_go, LIN28B_binding)))
 
-sumdf_RNA %>% arrange(desc(V9)) %>% mutate(percentile_log10Q = 1:n()/n(), rank = 1:n()) %>% filter(BCL11A) -> rankDF_RNA
+sumdf_RNA %>% arrange(desc(V9)) %>% filter(motif == 1) %>% 
+  mutate(percentile_log10Q = 1:n()/n(), rank = 1:n(), total = n()) %>% filter(BCL11A) -> rankDF_RNA
 
 
 lin28b_rRNA_NoDupNoLambda_go <- lin_rrna[1:length(lin_rrna) %ni%  queryHits(findOverlaps(lin_rrna, c(p1, p2)))]
-sumdf_rRNA <- data.frame(lin28b_rRNA_NoDupNoLambda_go, BCL11A = 1:length(lin28b_rRNA_NoDupNoLambda_go) %in%
+seq_lin28b_rRNA_NoDupNoLambda_go <- getSeq(BSgenome.Hsapiens.UCSC.hg19, addchr(lin28b_rRNA_NoDupNoLambda_go))
+motif_rRNA <- as.numeric((vcountPattern("GGAGA", seq_lin28b_rRNA_NoDupNoLambda_go) + vcountPattern("TCTCC", seq_lin28b_rRNA_NoDupNoLambda_go)) > 0)
+
+sumdf_rRNA <- data.frame(lin28b_rRNA_NoDupNoLambda_go, motif = motif_rRNA, BCL11A = 1:length(lin28b_rRNA_NoDupNoLambda_go) %in%
                           queryHits(findOverlaps(lin28b_rRNA_NoDupNoLambda_go, LIN28B_binding)))
 
-sumdf_rRNA %>% arrange(desc(V9)) %>% mutate(percentile_log10Q = 1:n()/n(), rank = 1:n()) %>% filter(BCL11A) -> rankDF_rRNA
+sumdf_rRNA %>% arrange(desc(V9)) %>% filter(motif == 1) %>% 
+  mutate(percentile_log10Q = 1:n()/n(), rank = 1:n(), total = n()) %>% filter(BCL11A) -> rankDF_rRNA
+
+rankDF_rRNA
+rankDF_RNA
 
 sumdf_rRNA %>% arrange(desc(V9)) %>% mutate(rank = 1:n()) %>%
   arrange(BCL11A) %>% 
