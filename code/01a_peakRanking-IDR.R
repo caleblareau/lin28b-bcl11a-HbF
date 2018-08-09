@@ -47,10 +47,10 @@ sumdf_RNA_noPURA <- data.frame(lin_rna,
 sumdf_RNA_noPURA %>% arrange(IDR) %>% 
   mutate(percentile_log10Q = 1:n()/n(), rank = 1:n(), total = n()) %>% filter(BCL11A) -> rankDF_RNA
 
-sumdf_RNA %>% filter(IDR < 0.0001) %>% dim()
+sumdf_RNA %>% filter(IDR < 0.01) %>% dim()
 
 sumdf_RNA %>% arrange(IDR) %>% 
-  filter(IDR < 0.0001) %>% 
+  filter(IDR < 0.01) %>% 
   mutate(rank = 1:n()) %>%
   arrange(BCL11A) %>% 
   ggplot(aes(x = rank, y = -log10(IDR), color = BCL11A)) + geom_point(size = 0.2) +
@@ -59,8 +59,8 @@ sumdf_RNA %>% arrange(IDR) %>%
 
 cowplot::ggsave(cowplot::plot_grid(IDRP, nrow = 1), file = "../output/plots/rankSorted_IDR.pdf",  width = 2, height = 2)
 
-out_idr <- sumdf_RNA[sumdf_RNA$IDR < 0.0001 ,c(1,2,3,14,15)]; colnames(out_idr) <- c("chr", "start", "end", "IDR", "GGAGA_motif")
-write.table(out_idr, file = "../output/LIN28B-IDR-stringent.bed", 
+out_idr <- sumdf_RNA[sumdf_RNA$IDR < 0.01 ,c(1,2,3,14,15)]; colnames(out_idr) <- c("chr", "start", "end", "IDR", "GGAGA_motif")
+write.table(out_idr, file = "../output/LIN28B-IDR.bed", 
             col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
 
 gro <- addchr(makeGRangesFromDataFrame(out_idr))
