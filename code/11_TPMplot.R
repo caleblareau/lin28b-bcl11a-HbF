@@ -2,28 +2,30 @@ library(data.table)
 library(dplyr)
 library(BuenColors)
 
-ad1 <- data.frame(fread("../data/Ad1-kallisto/abundance.tsv"))
-ad2 <- data.frame(fread("../data/Ad2-kallisto/abundance.tsv"))
-cb1 <- data.frame(fread("../data/CB1-kallisto/abundance.tsv"))
-cb2 <- data.frame(fread("../data/CB2-kallisto/abundance.tsv"))
+ad1 <- data.frame(fread("../rna-seqdata/kallisto/Ad1-S1/abundance.tsv"))
+ad2 <- data.frame(fread("../rna-seqdata/kallisto/Ad2-S1/abundance.tsv"))
+cb1 <- data.frame(fread("../rna-seqdata/kallisto/CB1-S1/abundance.tsv"))
+cb2 <- data.frame(fread("../rna-seqdata/kallisto/CB2-S1/abundance.tsv"))
 
 df <- data.frame(
-  transcript = ab1$target_id,
+  transcript = ad1$target_id,
   AD1 = ad1$tpm,
   AD2 = ad2$tpm,
   CB1 = cb1$tpm,
   CB2 = cb2$tpm
 )
 
-BCL11A <- c("ENST00000492272.5",
-            "ENST00000489516.6", 
-            "ENST00000489183.1",
-            "ENST00000477659.1",
-            "ENST00000409351.4",
-            "ENST00000359629.9",
-            "ENST00000358510.5",
-            "ENST00000356842.8",
-            "ENST00000335712.10")
+BCL11A <- c("ENST00000538214",
+            "ENST00000537768", 
+            "ENST00000492272",
+            "ENST00000489516",
+            "ENST00000489183",
+            "ENST00000477659",
+            "ENST00000409351",
+            "ENST00000359629",
+            "ENST00000358510",
+            "ENST00000356842",
+            "ENST00000335712")
 
 df %>% filter(transcript %in% BCL11A) %>%
   reshape2::melt(id.vars = "transcript") %>%

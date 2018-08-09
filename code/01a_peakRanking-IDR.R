@@ -17,7 +17,7 @@ importPeaks_IDR <- function(file){
   df$V2 <- pmin(df$start1, df$start2)
   df$V3 <- pmax(df$stop1, df$stop2)
 
-  x <- unique(makeGRangesFromDataFrame(df, seqnames.field = "chr1", start.field = "V2", end.field = "V3", keep.extra.columns = TRUE))
+  x <- unique(makeGRangesFromDataFrame(df[df$IDR < 0.01,], seqnames.field = "chr1", start.field = "V2", end.field = "V3", keep.extra.columns = TRUE))
   x <- x[seqnames(x) %in% c(as.character(1:22), "X")]
   return(x)
 }
@@ -40,7 +40,11 @@ motif_RNA <- as.numeric((vcountPattern("GGAGA", seq_lin28b_RNA_NoDupNoLambda_go)
 sumdf_RNA <- data.frame(lin28b_RNA_NoDupNoLambda_go, motif = motif_RNA, BCL11A = 1:length(lin28b_RNA_NoDupNoLambda_go) %in%
                           queryHits(findOverlaps(lin28b_RNA_NoDupNoLambda_go, LIN28B_binding)))
 
-sumdf_RNA %>% arrange(IDR) %>% 
+sumdf_RNA_noPURA <- data.frame(lin_rna, 
+                               BCL11A = 1:length(lin_rna) %in%
+                          queryHits(findOverlaps(lin_rna, LIN28B_binding)))
+
+sumdf_RNA_noPURA %>% arrange(IDR) %>% 
   mutate(percentile_log10Q = 1:n()/n(), rank = 1:n(), total = n()) %>% filter(BCL11A) -> rankDF_RNA
 
 sumdf_RNA %>% filter(IDR < 0.0001) %>% dim()
