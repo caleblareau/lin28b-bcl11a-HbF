@@ -1,4 +1,7 @@
 library(sleuth)
+library(BuenColors)
+library(dplyr)
+
 base_dir <- "../rna-seqdata/kallisto"
 sample_id <- dir(file.path(base_dir))
 kal_dirs <- paste0(base_dir, "/", sample_id)
@@ -28,6 +31,7 @@ so$bs_summary$obs_tpm["ENSG00000187772",] %>%
   group_by(condition) %>% summarize(mean = mean(log2(value + 1)),
                                     sd = sd(log2(value + 1))) -> summary_df
 
+summary_df$condition <- factor(as.character(summary_df$condition), c("Newborn", "Adult"))
 p1 <- ggplot(summary_df, aes(x = condition, y = mean)) +
   geom_bar(position=position_dodge(), stat="identity",
            color = "black", width = 0.4, fill = "grey") +
