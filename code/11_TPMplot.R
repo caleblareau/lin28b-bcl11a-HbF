@@ -1,6 +1,7 @@
 library(data.table)
 library(dplyr)
 library(BuenColors)
+library(ggbeeswarm)
 
 ad1 <- data.frame(fread("../rna-seqdata/kallisto/Ad1-S1/abundance.tsv"))
 ad2 <- data.frame(fread("../rna-seqdata/kallisto/Ad2-S1/abundance.tsv"))
@@ -30,19 +31,24 @@ BCL11A <- c("ENST00000538214",
 df %>% filter(transcript %in% BCL11A) %>%
   reshape2::melt(id.vars = "transcript") %>%
   mutate(condition = ifelse(substring(variable, 1, 1) == "A", "Adult", "Newborn")) %>%
-  group_by(transcript, condition) %>% summarize(mean = mean(log2(value + 1)), sd = sd(log2(value + 1))) -> summary_df
+  group_by(transcript, condition) %>%
+  summarize(mean = mean(log2(value + 1)), sd = sd(log2(value + 1)),
+            p1 = min(log2(value + 1)), p2 = max(log2(value + 1))) -> summary_df
+sdf <- reshape2::melt(summary_df[,c("transcript", "condition", "p1", "p2")], id.vars = c("transcript", "condition"))
+colnames(sdf) <- c("transcript", "condition", "variable", "mean")
 
-p1 <- ggplot(summary_df, aes(x = transcript, y = mean, fill = condition)) +
+p1 <- ggplot(summary_df, aes(x = transcript, y = mean, fill = condition, shape = condition)) +
   geom_bar(position=position_dodge(), stat="identity", color = "black", width = 0.4) +
-  scale_fill_manual(values = c("lightgrey", "gray30")) +
+  scale_fill_manual(values = c("lightgrey", "gray60")) +
   geom_errorbar(aes(ymin=mean, ymax=mean+sd),
-                width=.2, position=position_dodge(.4)) +
+                width=.2, position=position_dodge(0.4)) +
   pretty_plot(fontsize = 8) + L_border() +
   labs(x = "", y = paste0("log2 TPM")) +
+  geom_point(data = sdf, position = position_dodge2(width = 0.4, padding = 0.1), size = 0.5) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_y_continuous( expand = c(0, 0)) +
   theme(legend.position = "bottom")
-ggsave(p1, file = "../output/TPM-Kallisto.pdf", width = 4, height = 3)
+cowplot::ggsave(p1, file = "../output/TPM-Kallisto.pdf", width = 4, height = 3)
 
 
 df %>% 

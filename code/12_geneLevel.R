@@ -46,8 +46,9 @@ ggsave(p1, file = "../output/TPM-LIN28B.pdf", width = 2, height = 2)
 so$bs_summary$obs_tpm["ENSG00000131914",] %>%
   reshape2::melt() %>%
   mutate(condition = c("Adult", "Adult", "Newborn", "Newborn")) %>%
-  group_by(condition) %>% summarize(mean = mean(log2(value + 1)),
-                                    sd = sd(log2(value + 1))) -> summary_df
+  group_by(condition) %>%
+  summarize(mean = mean(log2(value + 1)), sd = sd(log2(value + 1)),
+            p1 = min(log2(value + 1)), p2 = max(log2(value+1))) -> summary_df
 
 summary_df$condition <- factor(as.character(summary_df$condition), c("Newborn", "Adult"))
 p1 <- ggplot(summary_df, aes(x = condition, y = mean)) +
@@ -65,18 +66,24 @@ so$bs_summary$obs_tpm["ENSG00000119866",] %>%
   reshape2::melt() %>%
   mutate(condition = c("Adult", "Adult", "Newborn", "Newborn")) %>%
   group_by(condition) %>% summarize(mean = mean(log2(value + 1)),
-                                    sd = sd(log2(value + 1))) -> summary_df
+                                    sd = sd(log2(value + 1)),
+                                    p1 = min(log2(value + 1)), p2 = max(log2(value+1))) -> summary_df
+
+sdf <- reshape2::melt(summary_df[,c("condition",  "p1", "p2")], id.vars = c("condition"))
+colnames(sdf) <- c("condition", "variable", "mean")
+
 
 p1 <- ggplot(summary_df, aes(x = condition, y = mean)) +
   geom_bar(position=position_dodge(), stat="identity",
            color = "black", width = 0.4, fill = "grey") +
   geom_errorbar(aes(ymin=mean, ymax=mean+sd),
                 width=.2, position=position_dodge(.4)) +
+  geom_point(data = sdf, position = position_dodge2(width = 0.4, padding = 0.1), size = 0.8) +
   pretty_plot(fontsize = 8) + L_border() +
   labs(x = "", y = paste0("log2 TPM")) +
   scale_y_continuous( expand = c(0, 0)) +
   theme(legend.position = "bottom")
-ggsave(p1, file = "../output/TPM-BCL11A.pdf", width = 2, height = 2)
+cowplot::ggsave(p1, file = "../output/TPM-BCL11A.pdf", width = 2, height = 2)
 
 
 two_df <- data.frame(Ad = log2(rowSums(so$bs_summary$obs_tpm[,c(1,2)]) + 1),
